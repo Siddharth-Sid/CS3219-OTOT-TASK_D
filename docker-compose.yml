@@ -1,0 +1,98 @@
+version: "2.1"
+
+services:
+
+  # Zookeepers
+  zookeeper1:
+    hostname: zookeeper1
+    container_name: zookeeper1
+    image: confluentinc/cp-zookeeper:7.2.1
+    ports:
+      - "2182:2182"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2182
+      ZOOKEEPER_SERVER_ID: 1
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+
+  zookeeper2:
+    hostname: zookeeper2
+    container_name: zookeeper2
+    image: confluentinc/cp-zookeeper:7.2.1
+    ports:
+      - "2183:2183"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2183
+      ZOOKEEPER_SERVER_ID: 2
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+
+  zookeeper3:
+    hostname: zookeeper3
+    container_name: zookeeper3
+    image: confluentinc/cp-zookeeper:7.2.1
+    ports:
+      - "2184:2184"
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2184
+      ZOOKEEPER_SERVER_ID: 3
+      ZOOKEEPER_SERVERS: zookeeper1:2888:3888;zookeeper2:2888:3888;zookeeper3:2888:3888
+
+
+
+
+  # Brokers
+  kafka1:
+    hostname: kafka_broker1
+    container_name: kafka_broker1
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+    ports:
+      - "8000:8000"
+      - "28000:28000"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka_broker1:18000,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:8000,DOCKER://host.docker.internal:28000
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2182,zookeeper2:2183,zookeeper3:2184"
+      KAFKA_BROKER_ID: 1
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+
+  kafka2:
+    hostname: kafka_broker2
+    container_name: kafka_broker2
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+    ports:
+      - "8001:8001"
+      - "28001:28001"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka_broker2:18001,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:8001,DOCKER://host.docker.internal:28001
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2182,zookeeper2:2183,zookeeper3:2184"
+      KAFKA_BROKER_ID: 2
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
+
+  kafka3:
+    hostname: kafka_broker3
+    container_name: kafka_broker3
+    image: confluentinc/cp-kafka:7.2.1
+    depends_on:
+      - zookeeper1
+      - zookeeper2
+      - zookeeper3
+    ports:
+      - "8002:8002"
+      - "28002:28002"
+    environment:
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka_broker3:18002,EXTERNAL://${DOCKER_HOST_IP:-127.0.0.1}:8002,DOCKER://host.docker.internal:28002
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,EXTERNAL:PLAINTEXT,DOCKER:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: "zookeeper1:2182,zookeeper2:2183,zookeeper3:2184"
+      KAFKA_BROKER_ID: 3
+      KAFKA_ALLOW_EVERYONE_IF_NO_ACL_FOUND: "true"
